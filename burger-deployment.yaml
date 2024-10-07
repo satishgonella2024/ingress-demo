@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: burger-deployment
+  labels:
+    app: burger
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: burger
+  template:
+    metadata:
+      labels:
+        app: burger
+    spec:
+      containers:
+      - name: burger
+        image: nginx
+        ports:
+        - containerPort: 80
+        command: ["/bin/sh", "-c"]
+        args:
+        - echo "<h1>Burger Service</h1>" > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: burger-service
+spec:
+  selector:
+    app: burger
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

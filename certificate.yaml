@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gonella-co-uk-wildcard-cert
+  namespace: default
+spec:
+  secretName: gonella-co-uk-tls
+  issuerRef:
+    name: letsencrypt-cluster-issuer
+    kind: ClusterIssuer
+  commonName: "*.gonella.co.uk"
+  dnsNames:
+  - "*.gonella.co.uk"
+  - gonella.co.uk # Also include the root domain
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days before

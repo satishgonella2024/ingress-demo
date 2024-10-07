@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: restaurant-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" # Force HTTPS redirection
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/hsts: "true" # Enabling HSTS
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/hsts-max-age: "63072000" # HSTS for 2 years
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3" # Minimum TLS version
+    nginx.ingress.kubernetes.io/limit-connections: "20" # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-rpm: "500"
+    nginx.ingress.kubernetes.io/upstream-checks: "true" # Health checks
+    nginx.ingress.kubernetes.io/upstream-fail-timeout: "5s"
+    nginx.ingress.kubernetes.io/proxy-cache-enabled: "true" # Enable caching
+    nginx.ingress.kubernetes.io/proxy-cache-valid: "200 301 302 10m"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k" # Optimize proxy buffer size
+    nginx.ingress.kubernetes.io/enable-access-log: "true" # Enable logging
+    nginx.ingress.kubernetes.io/enable-access-log-headers: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - restaurant.gonella.co.uk # Covered by wildcard cert
+    - another-sub.gonella.co.uk # Another subdomain covered by wildcard cert
+    secretName: gonella-co-uk-tls # The TLS secret issued by cert-manager
+  rules:
+  - host: restaurant.gonella.co.uk
+    http:
+      paths:
+      - path: /pizza
+        pathType: Prefix
+        backend:
+          service:
+            name: pizza-service
+            port:
+              number: 80
+      - path: /burger
+        pathType: Prefix
+        backend:
+          service:
+            name: burger-service
+            port:
+              number: 80
