@@ -1,0 +1,72 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress
+  namespace: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-cluster-issuer"
+spec:
+  tls:
+  - hosts:
+    - argocd.gonella.co.uk
+    secretName: gonella-co-uk-tls # The TLS secret for your domain
+  rules:
+  - host: argocd.gonella.co.uk
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: restaurant-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/hsts: "true"
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/hsts-max-age: "63072000"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-rpm: "500"
+    nginx.ingress.kubernetes.io/upstream-checks: "true"
+    nginx.ingress.kubernetes.io/upstream-fail-timeout: "5s"
+    nginx.ingress.kubernetes.io/proxy-cache-enabled: "true"
+    nginx.ingress.kubernetes.io/proxy-cache-valid: "200 301 302 10m"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-access-log-headers: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - restaurant.gonella.co.uk
+    - another-sub.gonella.co.uk
+    secretName: gonella-co-uk-tls # Reusing wildcard TLS secret
+  rules:
+  - host: restaurant.gonella.co.uk
+    http:
+      paths:
+      - path: /pizza
+        pathType: Prefix
+        backend:
+          service:
+            name: pizza-service
+            port:
+              number: 80
+      - path: /burger
+        pathType: Prefix
+        backend:
+          service:
+            name: burger-service
+            port:
+              number: 80

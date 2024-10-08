@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: demo.gonella.co.uk
+    http:
+      paths:
+      - path: /pizza
+        pathType: Prefix
+        backend:
+          service:
+            name: pizza-service
+            port:
+              number: 80
+      - path: /burger
+        pathType: Prefix
+        backend:
+          service:
+            name: burger-service
+            port:
+              number: 80
